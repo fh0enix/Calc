@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Формули — мобільна сторінка</title>
+  <style>
+    :root{--bg:#2b2b2b;--card:#3a3a3a;--accent:#c9a36a;--muted:#d2c7b3;--text:#f3eadc;--glass:rgba(255,255,255,0.08)}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--text); padding:18px}
+    .wrap{max-width:720px;margin:0 auto}
+
+    header{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#a6875a);display:flex;align-items:center;justify-content:center;font-weight:700;color:#2b2b2b;box-shadow:0 6px 18px rgba(201,163,106,0.3)}
+    h1{font-size:18px;margin:0;color:var(--text)}
+    p.lead{margin:6px 0 18px;color:var(--muted);font-size:13px}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border-radius:14px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,0.4);margin-bottom:14px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    .row{display:flex;gap:10px}
+    input[type=number]{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:var(--card);color:var(--text);font-size:16px}
+    .col{flex:1}
+    .actions{display:flex;gap:8px;margin-top:12px}
+    button{flex:1;padding:12px;border-radius:10px;border:0;font-weight:600;font-size:15px;background:var(--accent);color:#2b2b2b;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted)}
+
+    .result{margin-top:12px;padding:12px;border-radius:10px;background:var(--glass);display:flex;justify-content:space-between;align-items:center;transition: background 0.5s;}
+    .result.highlight{background: rgba(201,163,106,0.3); }
+    .big{font-size:18px;font-weight:700}
+    .muted{color:var(--muted);font-size:13px}
+
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
+
+    @media(min-width:600px){body{padding:28px}.logo{width:64px;height:64px}.wrap{max-width:640px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">Σ</div>
+      <div>
+        <h1>Калькулятор</h1>
+        <p class="lead"></p>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="row">
+        <div class="col">
+          <label for="a2">БУЛО</label>
+          <input id="a2" type="number" inputmode="decimal" step="any" placeholder="0" />
+        </div>
+        <div class="col">
+          <label for="b2">СТАЛО</label>
+          <input id="b2" type="number" inputmode="decimal" step="any" placeholder="0" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="calc1">Порахувати відсоток</button>
+        <button id="clear1" class="ghost">Очистити</button>
+      </div>
+      <div id="out1" class="result" style="display:none">
+        <div>
+          <div class="muted">Результат</div>
+          <div id="val1" class="big">0</div>
+        </div>
+        <div class="muted" id="extra1"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <div class="col">
+          <label for="a8">ВХІДНІ</label>
+          <input id="a8" type="number" inputmode="decimal" step="any" placeholder="0" />
+        </div>
+        <div class="col">
+          <label for="b8">ПРОДАЖ</label>
+          <input id="b8" type="number" inputmode="decimal" step="any" placeholder="0" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="calc2">Порахувати відсоток</button>
+        <button id="clear2" class="ghost">Очистити</button>
+      </div>
+      <div id="out2" class="result" style="display:none">
+        <div>
+          <div class="muted">Результат</div>
+          <div id="val2" class="big">0</div>
+        </div>
+        <div class="muted" id="extra2"></div>
+      </div>
+    </section>
+
+    <footer class="muted">Підказка: можна вводити десяткові значення. Нуль у дільнику перевіряється.</footer>
+  </div>
+
+  <script>
+    function fmt(n, digits=2){
+      if (!isFinite(n)) return '–';
+      return Number(n.toFixed(digits)).toString();
+    }
+
+    function highlight(el){
+      el.classList.add('highlight');
+      setTimeout(()=>el.classList.remove('highlight'), 500);
+    }
+
+    const a2 = document.getElementById('a2');
+    const b2 = document.getElementById('b2');
+    const calc1 = document.getElementById('calc1');
+    const clear1 = document.getElementById('clear1');
+    const out1 = document.getElementById('out1');
+    const val1 = document.getElementById('val1');
+    const extra1 = document.getElementById('extra1');
+
+    calc1.addEventListener('click', ()=>{
+      const A = parseFloat(a2.value);
+      const B = parseFloat(b2.value);
+      if (!isFinite(A) || !isFinite(B)) { alert('Введіть числа у обидва поля.'); return; }
+      if (A === 0) {
+        val1.textContent = 'Ділення на нуль';
+        extra1.textContent = '';
+        out1.style.display = 'flex';
+        highlight(out1);
+        return;
+      }
+      const ratio = (B - A) / A;
+      const pct = ratio * 100;
+      val1.textContent = fmt(pct) + ' %';
+      extra1.textContent = `Зміна: ${fmt(B-A)}`;
+      out1.style.display = 'flex';
+      highlight(out1);
+    });
+    clear1.addEventListener('click', ()=>{ a2.value=''; b2.value=''; out1.style.display='none'; });
+
+    const a8 = document.getElementById('a8');
+    const b8 = document.getElementById('b8');
+    const calc2 = document.getElementById('calc2');
+    const clear2 = document.getElementById('clear2');
+    const out2 = document.getElementById('out2');
+    const val2 = document.getElementById('val2');
+    const extra2 = document.getElementById('extra2');
+
+    calc2.addEventListener('click', ()=>{
+      const A = parseFloat(a8.value);
+      const B = parseFloat(b8.value);
+      if (!isFinite(A) || !isFinite(B)) { alert('Введіть числа у обидва поля.'); return; }
+      if (A === 0) {
+        val2.textContent = 'Ділення на нуль';
+        extra2.textContent = '';
+        out2.style.display = 'flex';
+        highlight(out2);
+        return;
+      }
+      const ratio = B / A;
+      const pct = ratio * 100;
+      val2.textContent = fmt(pct) + ' %';
+      extra2.textContent = `Відношення: ${fmt(ratio,4)}`;
+      out2.style.display = 'flex';
+      highlight(out2);
+    });
+    clear2.addEventListener('click', ()=>{ a8.value=''; b8.value=''; out2.style.display='none'; });
+
+    [a2,b2].forEach(el => el.addEventListener('keypress', e=>{ if (e.key==='Enter') calc1.click(); }));
+    [a8,b8].forEach(el => el.addEventListener('keypress', e=>{ if (e.key==='Enter') calc2.click(); }));
+  </script>
+</body>
+</html>
